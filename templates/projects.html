@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>المشاريع</h1>
+<div class="card-grid">
+    {% for project in projects %}
+    <div class="card">
+        {% if project.image_url %}
+        <img src="{{ project.image_url }}" alt="{{ project.title }}">
+        {% endif %}
+        <h3>{{ project.title }}</h3>
+        <p>{{ project.description }}</p>
+        {% if project.download_link %}
+        <a href="{{ project.download_link }}" class="btn btn-green" target="_blank"
+            download="{{ project.file_name or '' }}">تحميل / مشاهدة</a>
+        {% endif %}
+        {% if current_user.is_authenticated and current_user.is_admin %}
+        <form action="{{ url_for('delete_project', project_id=project.id) }}" method="POST" style="margin-top:10px;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button type="submit" class="btn btn-red">حذف المشروع</button>
+        </form>
+        {% endif %}
+    </div>
+    {% else %}
+    <p>لا توجد مشاريع حالياً.</p>
+    {% endfor %}
+</div>
+{% endblock %}

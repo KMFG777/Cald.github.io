@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>إعدادات الحساب</h1>
+
+<div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+    <div class="card">
+        <h2>الملف الشخصي</h2>
+        <form method="POST" action="{{ url_for('settings_profile') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <label>اسم العرض (ليس اسم المستخدم)</label>
+            <input type="text" name="display_name" value="{{ profile.display_name or current_user.name }}">
+
+            <label>رابط صورة الحساب (Avatar)</label>
+            <input type="text" name="avatar_url" value="{{ profile.avatar_url or '' }}">
+
+            <button type="submit" class="btn btn-green" style="width: 100%;">حفظ التغييرات</button>
+        </form>
+        <hr style="border-color:#1f2a2a; margin: 16px 0;">
+        <h3>رفع صورة الحساب</h3>
+        <form method="POST" action="{{ url_for('settings_avatar') }}" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <input type="file" name="avatar" accept="image/*">
+            <button type="submit" class="btn btn-red" style="width: 100%;">رفع الصورة</button>
+        </form>
+        {% if profile.avatar_url %}
+        <div style="margin-top: 10px;">
+            <img src="{{ profile.avatar_url }}" alt="Avatar" style="max-width: 160px; border-radius: 8px;">
+        </div>
+        {% endif %}
+    </div>
+    <div class="card">
+        <h2>تغيير كلمة المرور</h2>
+        <form method="POST" action="{{ url_for('settings_change_password') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <label>كلمة المرور القديمة</label>
+            <input type="password" name="old_password" required>
+
+            <label>كلمة المرور الجديدة</label>
+            <input type="password" name="new_password" required>
+
+            <label>تأكيد كلمة المرور الجديدة</label>
+            <input type="password" name="confirm_new_password" required>
+
+            <button type="submit" class="btn btn-green" style="width: 100%;">تغيير كلمة المرور</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

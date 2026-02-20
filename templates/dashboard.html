@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>لوحة التحكم</h1>
+
+<div class="dashboard-section">
+    <h2>الرسائل الواردة</h2>
+    {% if messages_new %}
+    {% for msg in messages_new %}
+    <div class="card" style="margin-bottom: 20px;">
+        <p><strong>من:</strong> {{ msg.sender_name }} {% if msg.sender_id %}(ID: {{ msg.sender_id }}){% endif %}</p>
+        <p><strong>الرسالة:</strong> {{ msg.content }}</p>
+        <p><small>{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</small></p>
+
+        <form action="{{ url_for('reply_message', msg_id=msg.id) }}" method="POST" style="margin-top: 10px;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <textarea name="reply" rows="2" placeholder="اكتب ردك هنا..." required></textarea>
+            <button type="submit" class="btn btn-green">إرسال الرد</button>
+        </form>
+        <form action="{{ url_for('delete_message', msg_id=msg.id) }}" method="POST" style="margin-top: 10px;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button type="submit" class="btn btn-red">حذف الرسالة</button>
+        </form>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p>لا توجد رسائل جديدة.</p>
+    {% endif %}
+</div>
+
+<div class="dashboard-section">
+    <h2>الرسائل المُجاب عليها</h2>
+    {% if messages_replied %}
+    {% for msg in messages_replied %}
+    <div class="card" style="margin-bottom: 20px;">
+        <p><strong>من:</strong> {{ msg.sender_name }} {% if msg.sender_id %}(ID: {{ msg.sender_id }}){% endif %}</p>
+        <p><strong>الرسالة:</strong> {{ msg.content }}</p>
+        <div style="background: #000; padding: 10px; margin-top: 10px;">
+            <p><strong>ردك:</strong> {{ msg.reply }}</p>
+        </div>
+        <p><small>{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</small></p>
+        <form action="{{ url_for('delete_message', msg_id=msg.id) }}" method="POST" style="margin-top: 10px;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button type="submit" class="btn btn-red">حذف الرسالة</button>
+        </form>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p>لا توجد رسائل مُجاب عليها.</p>
+    {% endif %}
+</div>
+
+<div class="dashboard-section">
+    <h2>إضافة مشروع جديد</h2>
+    <form action="{{ url_for('add_project') }}" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <label>عنوان المشروع</label>
+        <input type="text" name="title" required>
+
+        <label>وصف المشروع</label>
+        <textarea name="description" rows="4" required></textarea>
+
+        <label>رابط الصورة</label>
+        <input type="text" name="image_url" placeholder="يمكن تركه فارغاً">
+        <div style="margin:8px 0;">
+            <input type="file" name="image_file" accept="image/*">
+        </div>
+
+        <label>رابط المشروع</label>
+        <input type="text" name="project_link" placeholder="يمكن تركه فارغاً">
+        <div style="margin:8px 0;">
+            <input type="file" name="project_file">
+        </div>
+        <div class="toggle-container" style="margin:20px 0; display: flex; align-items: center; gap: 10px;">
+            <label class="switch">
+                <input type="checkbox" name="allow_download">
+                <span class="slider round"></span>
+            </label>
+            <span class="toggle-label">السماح بالتحميل (مشاهدة فقط / تنزيل)</span>
+        </div>
+
+        <button type="submit" class="btn btn-green">نشر المشروع</button>
+    </form>
+</div>
+
+<div class="dashboard-section">
+    <h2>إضافة رابط جديد</h2>
+    <form action="{{ url_for('add_link') }}" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <label>عنوان الرابط</label>
+        <input type="text" name="title" required>
+
+        <label>رابط الصورة</label>
+        <input type="text" name="image_url" placeholder="يمكن تركه فارغاً">
+        <div style="margin:8px 0;">
+            <input type="file" name="image_file" accept="image/*">
+        </div>
+
+        <label>الرابط</label>
+        <input type="text" name="url" required>
+
+        <button type="submit" class="btn btn-green">نشر الرابط</button>
+    </form>
+</div>
+{% endblock %}

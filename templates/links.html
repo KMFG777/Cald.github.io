@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>روابط مهمة</h1>
+<div class="card-grid">
+    {% for link in links %}
+    <div class="card">
+        {% if link.image_url %}
+        <img src="{{ link.image_url }}" alt="{{ link.title }}">
+        {% endif %}
+        <h3>{{ link.title }}</h3>
+        {% if link.url %}
+        <a href="{{ link.url }}" class="btn btn-green" target="_blank">زيارة الرابط</a>
+        {% endif %}
+        {% if current_user.is_authenticated and current_user.is_admin %}
+        <form action="{{ url_for('delete_link', link_id=link.id) }}" method="POST" style="margin-top:10px;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button type="submit" class="btn btn-red">حذف الرابط</button>
+        </form>
+        {% endif %}
+    </div>
+    {% else %}
+    <p>لا توجد روابط حالياً.</p>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,9 @@
+Flask-WTF
+Flask-Limiter
+Flask-SQLAlchemy
+Flask-Login
+Flask_Talisman
+feedparser
+requests
+werkzeug
+gunicorn

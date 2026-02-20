@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}كالد | Cald{% endblock %}</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <nav>
+        <div class="logo">كالد | Cald</div>
+        <ul>
+            <li><a href="{{ url_for('index') }}">الرئيسية</a></li>
+            <li><a href="{{ url_for('projects') }}">مشاريع</a></li>
+            <li><a href="{{ url_for('links') }}">روابط</a></li>
+            <li><a href="{{ url_for('chat') }}">الدعم الفني</a></li>
+            {% if current_user.is_authenticated %}
+            <li class="user-menu">
+                <button class="user-trigger">
+                    {% if current_profile and current_profile.avatar_url %}
+                    <img src="{{ current_profile.avatar_url }}" alt="avatar" class="avatar-pill">
+                    {% endif %}
+                    {{ current_user.name }} ▾
+                </button>
+                <div class="user-dropdown">
+
+                    <a href="{{ url_for('settings') }}">إعدادات الحساب</a>
+                    {% if current_user.is_admin %}
+                    <a href="{{ url_for('dashboard') }}">لوحة التحكم</a>
+                    {% endif %}
+                    <a href="{{ url_for('logout') }}" class="logout-btn">تسجيل خروج</a>
+                </div>
+            </li>
+            {% else %}
+            <li><a href="{{ url_for('login') }}">تسجيل الدخول</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="notify-overlay" data-type="{{ category }}">
+            <div class="notify-card">
+                <div class="circle {{ 'success' if category=='success' else 'error' }}">
+                    <span>{{ '✓' if category=='success' else '✕' }}</span>
+                </div>
+                <div class="notify-text">{{ message }}</div>
+            </div>
+        </div>
+        {% endfor %}
+        <script>
+            setTimeout(() => {
+                document.querySelectorAll('.notify-overlay').forEach(el => el.style.display = 'none');
+            }, 2000);
+        </script>
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer style="text-align: center; padding: 20px; color: gray;">
+        <p>حقوق النشر &copy; {{ now.year }} كالد | Cald</p>
+    </footer>
+    <script>
+        const trigger = document.querySelector('.user-trigger');
+        if (trigger) {
+            trigger.addEventListener('click', () => {
+                const dd = document.querySelector('.user-dropdown');
+                dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+            });
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.user-menu')) {
+                    const dd = document.querySelector('.user-dropdown');
+                    if (dd) dd.style.display = 'none';
+                }
+            });
+        }
+    </script>
+    <script src="{{ url_for('static', filename='js/particles.js') }}"></script>
+</body>
+
+</html>

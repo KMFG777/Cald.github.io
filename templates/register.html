@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 400px; margin: 0 auto;">
+    <h1>إنشاء حساب جديد</h1>
+    <form method="POST" action="{{ url_for('register') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <label>الاسم الكامل</label>
+        <input type="text" name="name" required>
+
+        <label>اسم المستخدم (يجب أن يكون مميزاً)</label>
+        <input type="text" name="username" required>
+
+        <label>البريد الإلكتروني</label>
+        <input type="email" name="email" required>
+
+        <label>كلمة المرور</label>
+        <input type="password" name="password" required>
+
+        <label>تأكيد كلمة المرور</label>
+        <input type="password" name="confirm_password" required>
+
+        <button type="submit" class="btn btn-green" style="width: 100%;">تسجيل</button>
+    </form>
+    <p style="margin-top: 20px; text-align: center;">
+        لديك حساب بالفعل؟ <a href="{{ url_for('login') }}">سجل دخول</a>
+    </p>
+</div>
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>الدعم الفني</h1>
+<p>أرسل رسالة مباشرة إلى كالد وسيتم الرد عليك في أقرب وقت.</p>
+
+<div class="chat-box" id="chat-box">
+    <div class="message bot">
+        أهلاً بك! يمكنك إرسال أي استفسار أو رسالة هنا.
+    </div>
+</div>
+<div id="reply-notify" class="card" style="display:none;">
+    <h3 style="color: var(--accent-green);">ردود جديدة على رسائلك</h3>
+    <div id="reply-list"></div>
+</div>
+
+<form id="chat-form" style="display: flex; gap: 10px;">
+    <input type="text" id="user-input" placeholder="اكتب رسالتك هنا..." required style="margin-bottom: 0;">
+    <button type="submit" class="btn btn-green">إرسال</button>
+</form>
+
+<script>
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    chatForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const content = userInput.value;
+        if (!content) return;
+
+        // Add user message
+        addMessage(content, 'user');
+        userInput.value = '';
+
+        // Send to backend
+        const formData = new FormData();
+        formData.append('content', content);
+
+        fetch('/chat', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrfToken
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                addMessage(data.response, 'bot');
+            })
+            .catch(err => {
+                console.error(err);
+                addMessage("حدث خطأ في الاتصال.", 'bot');
+            });
+    });
+
+    function addMessage(text, sender) {
+        const div = document.createElement('div');
+        div.className = `message ${sender}`;
+        div.textContent = text;
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Poll for replies if logged in
+    setInterval(() => {
+        fetch('/my_replies')
+            .then(r => r.json())
+            .then(list => {
+                if (Array.isArray(list) && list.length) {
+                    const box = document.getElementById('reply-notify');
+                    const listDiv = document.getElementById('reply-list');
+                    box.style.display = 'block';
+                    listDiv.innerHTML = '';
+                    list.forEach(item => {
+                        const div = document.createElement('div');
+                        div.style.borderBottom = "1px solid #444";
+                        div.style.padding = "10px";
+                        div.innerHTML = `
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <strong>رسالتك:</strong> ${item.content}<br/>
+                                    <strong>رد كالد:</strong> ${item.reply} <small>${item.at}</small>
+                                </div>
+                                <button onclick="deleteMessage(${item.id})" style="background:red; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:3px;">حذف</button>
+                            </div>
+                        `;
+                        listDiv.appendChild(div);
+                    });
+                }
+            }).catch(() => { });
+    }, 5000);
+
+    function deleteMessage(id) {
+        if (!confirm('هل أنت متأكد من حذف هذه الرسالة؟')) return;
+
+        const fd = new FormData();
+        // fd.append('csrf_token', csrfToken); // Flask-WTF checks body too, but header is cleaner
+
+        fetch(`/delete_my_message/${id}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            }
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.ok) {
+                    // Refresh list eventually, manual removal for UI responsiveness
+                    // For now just wait for next poll or reload
+                    alert('تم الحذف');
+                    location.reload();
+                } else {
+                    alert('فشل الحذف: ' + (data.error || 'Unknown error'));
+                }
+            });
+    }
+</script>
+{% endblock %}

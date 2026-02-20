@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>تحليل الذكاء الاصطناعي للفيديوهات</h1>
+<p>هذه الصفحة تستخدم الذكاء الاصطناعي لجلب وتحليل فيديوهات القناة التي تحتوي على شروحات PC.</p>
+
+<div id="loading" style="text-align: center; margin-top: 50px;">
+    <p>جاري تحليل الفيديوهات...</p>
+</div>
+
+<div id="videos-container" class="card-grid">
+    <!-- Videos will be injected here -->
+</div>
+
+<script>
+    fetch('/get_videos')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('loading').style.display = 'none';
+            const container = document.getElementById('videos-container');
+            
+            if (data.length === 0) {
+                container.innerHTML = '<p>لا توجد فيديوهات مطابقة حالياً.</p>';
+                return;
+            }
+
+            data.forEach(video => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                
+                const stepsHtml = video.summary.split('\n').map(step => `<li>${step}</li>`).join('');
+                
+                card.innerHTML = `
+                    <img src="${video.thumbnail}" alt="${video.title}">
+                    <h3>${video.title}</h3>
+                    <div style="background: #000; padding: 10px; margin: 10px 0; border-radius: 5px;">
+                        <h4 style="color: var(--accent-green); margin-top: 0;">خطوات الشرح (AI):</h4>
+                        <ul style="padding-right: 20px; text-align: right;">
+                            ${stepsHtml}
+                        </ul>
+                    </div>
+                    <a href="${video.link}" class="btn btn-red" target="_blank">مشاهدة على YouTube</a>
+                `;
+                container.appendChild(card);
+            });
+        })
+        .catch(err => {
+            document.getElementById('loading').innerText = 'حدث خطأ أثناء جلب البيانات.';
+            console.error(err);
+        });
+</script>
+{% endblock %}
